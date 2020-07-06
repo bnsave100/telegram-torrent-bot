@@ -1,6 +1,7 @@
 package qbittorrent
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"net/http/cookiejar"
@@ -8,7 +9,7 @@ import (
 	"strings"
 )
 
-type qBittorrent struct {
+type QBittorrent struct {
 	username string
 	password string
 
@@ -16,7 +17,7 @@ type qBittorrent struct {
 	baseUrl string
 }
 
-func (qb *qBittorrent) auth() {
+func (qb *QBittorrent) auth() {
 	client := &http.Client{}
 
 	resp, err := client.PostForm(qb.baseUrl+"auth/login", url.Values{
@@ -45,10 +46,36 @@ func (qb *qBittorrent) auth() {
 	qb.client = client
 }
 
-func NewQBittorrent(login string, password string, baseUrl string) *qBittorrent {
-	qb := &qBittorrent{username: login, password: password}
+func (qb *QBittorrent) Add(urls []string) (err error) {
+	v := url.Values{}
 
-	qb.baseUrl = baseUrl + "/api/v2/"
+	for _, u := range urls {
+		if u == "" {
+			continue
+		}
+		v.Add("urls", u)
+	}
+
+	res, err := qb.client.PostForm(qb.baseUrl+"torrents/add", v)
+
+	if err != nil {
+		return
+	}
+
+	if res.StatusCode != 200 {
+		return errors.New("something went wrong")
+	}
+
+	return
+}
+
+func NewQBittorrent(login string, password string, baseUrl string) *QBittorrent {
+	qb := &QBittorrent{
+		username: login,
+		password: password,
+		baseUrl:  baseUrl + "/api/v2/",
+	}
+
 	qb.auth()
 
 	return qb

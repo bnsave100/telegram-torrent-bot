@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"gopkg.in/tucnak/telebot.v2"
 	"log"
 	"strings"
@@ -12,6 +11,7 @@ import (
 
 var telegramUserId int
 var qBittorrentClient *qbittorrent.QBittorrent
+var bot *telebot.Bot
 
 func main() {
 	keyFlag := flag.String("key", "", "telegram api key")
@@ -25,7 +25,7 @@ func main() {
 	telegramUserId = *userIdFlag
 	qBittorrentClient = qbittorrent.NewQBittorrent(*qblFlag, *qbpFlag, *qbuFlag)
 
-	bot := getBot(*keyFlag)
+	bot = getBot(*keyFlag)
 
 	bot.Handle("/add", add)
 
@@ -37,7 +37,15 @@ func add(m *telebot.Message) {
 		return
 	}
 
-	fmt.Printf("%+v/n", m)
+	message := strings.Replace(m.Text, "/add ", "", -1)
+	err := qBittorrentClient.Add(strings.Split(message, "\n"))
+
+	if err == nil {
+		_, _ = bot.Send(m.Sender, "Success!")
+		return
+	}
+
+	_, _ = bot.Send(m.Sender, err.Error())
 }
 
 func getBot(apiKey string) (bot *telebot.Bot) {
