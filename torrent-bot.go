@@ -18,7 +18,7 @@ func main() {
 	userIdFlag := flag.Int("user", 0, "telegram user id")
 	qblFlag := flag.String("qbl", "", "qBittorrent username")
 	qbpFlag := flag.String("qbp", "", "qBittorrent password")
-	qbuFlag := flag.String("qbu", "", "qBittorrent base url")
+	qbuFlag := flag.String("qbu", "http://localhost:8080", "qBittorrent base url")
 
 	flag.Parse()
 
