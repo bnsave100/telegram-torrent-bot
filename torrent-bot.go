@@ -1,14 +1,18 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
+	"fmt"
 	"gopkg.in/tucnak/telebot.v2"
 	"log"
+	"net/http"
 	"strings"
 	"time"
 	"torrent-bot/qbittorrent"
 )
 
+var telegramApiKey string
 var telegramUserId int
 var qBittorrentClient *qbittorrent.QBittorrent
 var bot *telebot.Bot
@@ -22,12 +26,15 @@ func main() {
 
 	flag.Parse()
 
+	telegramApiKey = *keyFlag
 	telegramUserId = *userIdFlag
 	qBittorrentClient = qbittorrent.NewQBittorrent(*qblFlag, *qbpFlag, *qbuFlag)
 
-	bot = getBot(*keyFlag)
+	bot = getBot(telegramApiKey)
 
 	bot.Handle("/add", add)
+
+	bot.Handle(telebot.OnDocument, onFile)
 
 	bot.Start()
 }
@@ -46,6 +53,45 @@ func add(m *telebot.Message) {
 	}
 
 	_, _ = bot.Send(m.Sender, err.Error())
+}
+
+func onFile(m *telebot.Message) {
+	if m.Sender.ID != telegramUserId && telegramUserId != 0 {
+		return
+	}
+
+	if m.Document.MIME != "application/x-bittorrent" {
+		return
+	}
+
+	file := m.Document.MediaFile()
+	url := getFileUrl(file)
+	err := qBittorrentClient.Add([]string{url})
+
+	if err == nil {
+		_, _ = bot.Send(m.Sender, "Success!")
+		return
+	}
+
+	_, _ = bot.Send(m.Sender, err.Error())
+}
+
+func getFileUrl(file *telebot.File) string {
+	fileJsonUrl := fmt.Sprintf("https://api.telegram.org/bot%s/getFile?file_id=%s", telegramApiKey, file.FileID)
+
+	client := &http.Client{}
+	r, _ := client.Get(fileJsonUrl)
+
+	var jsonParsed struct {
+		Result struct {
+			FilePath string `json:"file_path"`
+		} `json:"result"`
+	}
+
+	_ = json.NewDecoder(r.Body).Decode(&jsonParsed)
+	_ = r.Body.Close()
+
+	return fmt.Sprintf("https://api.telegram.org/file/bot%s/%s", telegramApiKey, jsonParsed.Result.FilePath)
 }
 
 func getBot(apiKey string) (bot *telebot.Bot) {
