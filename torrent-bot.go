@@ -33,7 +33,7 @@ func main() {
 }
 
 func add(m *telebot.Message) {
-	if m.Sender.ID != telegramUserId {
+	if m.Sender.ID != telegramUserId && telegramUserId != 0 {
 		return
 	}
 
