@@ -4,6 +4,8 @@ A very basic bot for telegram that connets to qBittorent and adds torrent links.
 
 ## Usage
 
+You can either send torrent links to the bot with `/add` command, or just send `.torrent` files. 
+
 ### Flags
 
 `key` - Telegram api key, which you can get from the BotFather. All the required info can be found at https://core.telegram.org/bots.
