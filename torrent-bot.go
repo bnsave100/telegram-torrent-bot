@@ -49,7 +49,6 @@ func add(m *telebot.Message) {
 }
 
 func getBot(apiKey string) (bot *telebot.Bot) {
-
 	bot, err := telebot.NewBot(telebot.Settings{
 		Token: apiKey,
 		Poller: &telebot.LongPoller{

@@ -2,7 +2,7 @@ package qbittorrent
 
 import (
 	"errors"
-	"fmt"
+	"log"
 	"net/http"
 	"net/http/cookiejar"
 	"net/url"
@@ -26,11 +26,16 @@ func (qb *QBittorrent) auth() {
 	})
 
 	if err != nil {
-		fmt.Println(err.Error())
+		log.Fatal(err.Error())
 		return
 	}
 
 	sid := between(resp.Header.Get("Set-Cookie"), "SID=", ";")
+
+	if sid == "" {
+		log.Fatal("qBittorrent auth error")
+	}
+
 	sidCookie := &http.Cookie{
 		Name:  "SID",
 		Value: sid,
