@@ -1,7 +1,9 @@
 package qbittorrent
 
 import (
+	"encoding/json"
 	"errors"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"net/http/cookiejar"
@@ -55,10 +57,9 @@ func (qb *QBittorrent) Add(urls []string) (err error) {
 	v := url.Values{}
 
 	for _, u := range urls {
-		if u == "" {
-			continue
+		if u != "" {
+			v.Add("urls", u)
 		}
-		v.Add("urls", u)
 	}
 
 	res, err := qb.client.PostForm(qb.baseUrl+"torrents/add", v)
@@ -70,6 +71,26 @@ func (qb *QBittorrent) Add(urls []string) (err error) {
 	if res.StatusCode != 200 {
 		return errors.New("something went wrong")
 	}
+
+	return
+}
+
+func (qb *QBittorrent) List() (list TorrentList, err error) {
+	res, err := qb.client.Get(qb.baseUrl + "torrents/info")
+
+	if err != nil {
+		return
+	}
+
+	body, err := ioutil.ReadAll(res.Body)
+
+	if err != nil {
+		return
+	}
+
+	_ = json.Unmarshal(body, &list)
+
+	_ = res.Body.Close()
 
 	return
 }

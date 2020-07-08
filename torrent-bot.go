@@ -34,6 +34,8 @@ func main() {
 
 	bot.Handle("/add", add)
 
+	bot.Handle("/list", list)
+
 	bot.Handle(telebot.OnDocument, onFile)
 
 	bot.Start()
@@ -53,6 +55,17 @@ func add(m *telebot.Message) {
 	}
 
 	_, _ = bot.Send(m.Sender, err.Error())
+}
+
+func list(m *telebot.Message) {
+	torrentList, err := qBittorrentClient.List()
+
+	if err != nil {
+		_, _ = bot.Send(m.Sender, err.Error())
+		return
+	}
+
+	_, _ = bot.Send(m.Sender, torrentList.ToString())
 }
 
 func onFile(m *telebot.Message) {
