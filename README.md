@@ -1,10 +1,17 @@
 # telegram-torrent-bot
 
-A very basic bot for telegram that connets to qBittorent and adds torrent links.
+A very basic bot for Telegram that connects to qBittorent and adds torrent links.
 
 ## Usage
 
-You can either send torrent links to the bot with `/add` command, or just send `.torrent` files. 
+The most basic usage is just sending `.torrent` files to the bot.
+
+### Commands
+
+`/add` - send torrent links to the bot.
+
+`/list` - list all current torrents with their names and progress.
+ 
 
 ### Flags
 
